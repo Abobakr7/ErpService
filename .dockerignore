@@ -1,0 +1,44 @@
+# Build output
+bin/
+obj/
+out/
+publish/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Git
+.git/
+.gitignore
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Test results
+TestResults/
+*.trx
+
+# Documentation
+*.md
+docs/
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log
+logs/

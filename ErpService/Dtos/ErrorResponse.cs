@@ -1,4 +1,4 @@
-﻿namespace ErpService.Dtos
+namespace ErpService.Dtos
 {
     public sealed class ErrorResponse
     {
