@@ -2,7 +2,7 @@
 {
     public class JwtSettings
     {
-        public const string SectionName = "Jwtsettings";
+        public const string SectionName = "JwtSettings";
 
         public string secretKey { get; set; } = string.Empty;
 
