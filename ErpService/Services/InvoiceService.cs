@@ -2,6 +2,7 @@ using ErpService.Data.Entities;
 using ErpService.Dtos;
 using ErpService.Repositories;
 using ErpService.Abstractions;
+using System.Text;
 
 namespace ErpService.Services
 {
@@ -16,23 +17,13 @@ namespace ErpService.Services
             _logger = logger;
         }
 
-    public async Task<InvoiceResponse?> StoreInvoiceAsync(InvoiceRequest request)
+        public async Task<InvoiceResponse?> StoreInvoiceAsync(InvoiceRequest request)
         {
             try
             {
                 // buisness validation 
                 ValidateBuisness(request);
-
-                // html invoice
-                byte[] htmlInvoice;
-                using (var ms = new MemoryStream())
-                {
-                    await request.InvoiceDoc.CopyToAsync(ms);
-                    htmlInvoice = ms.ToArray();
-                }
-
-                ValidateHtmlFile(request.InvoiceDoc, htmlInvoice);
-
+                ValidateHtmlFile(request.InvoiceDoc);
 
                 var invoice = new Invoice
                 {
@@ -46,13 +37,11 @@ namespace ErpService.Services
                     AmountWithoutTax = request.AmountWithoutTax,
                     TaxAmount = request.TaxAmount,
                     Amount = request.Amount,
-                    InvoiceHtmlContent = htmlInvoice,
+                    InvoiceHtmlContent = request.InvoiceDoc,
                     CreatedAt = DateTime.UtcNow
                 };
 
-
                 var saved = await _invoiceRepository.SaveInvoiceAsync(invoice);
-
                 if (!saved)
                 {
                     _logger.LogWarning("Invoice {InvoiceId} already exists", request.InvoiceId);
@@ -67,7 +56,9 @@ namespace ErpService.Services
                     TicketId = invoice.TicketId,
                     TicketSerial = invoice.TicketSerial,
                     Amount = invoice.Amount,
-                    CreatedAtUtc = invoice.CreatedAt
+                    TaxAmount = invoice.TaxAmount,
+                    AmountAfterTax = invoice.AmountWithoutTax,
+                    CreatedAtUtc = invoice.CreatedAt,
                 };
             }
             catch (Exception ex)
@@ -75,8 +66,6 @@ namespace ErpService.Services
                 _logger.LogError(ex, "Error processing invoice {InvoiceId}", request.InvoiceId);
                 throw;
             }
-
-
         }
 
 
@@ -116,16 +105,10 @@ namespace ErpService.Services
             }
         }
 
-        private void ValidateHtmlFile(IFormFile file, byte[] content)
+        private void ValidateHtmlFile(string content)
         {
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (extension != ".html" && extension != ".htm")
-            {
-                throw new InvalidOperationException("Invoice document must be an HTML file");
-            }
-
-            const long maxFileSize = 5 * 1024 * 1024;
-            if (content.Length > maxFileSize)
+            var byteSize = Encoding.UTF8.GetByteCount(content);
+            if (byteSize > 5 * 1024 * 1024)
             {
                 throw new InvalidOperationException("Invoice HTML file exceeds maximum size of 5MB");
             }
@@ -136,10 +119,8 @@ namespace ErpService.Services
                 throw new InvalidOperationException("Invoice HTML file is too small or empty");
             }
 
-            // HTML validation
-            var htmlText = System.Text.Encoding.UTF8.GetString(content);
-            if (!htmlText.Contains("<html", StringComparison.OrdinalIgnoreCase) &&
-                !htmlText.Contains("<!DOCTYPE", StringComparison.OrdinalIgnoreCase))
+            if (!content.Contains("<html", StringComparison.OrdinalIgnoreCase) &&
+                !content.Contains("<!DOCTYPE", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("Invalid HTML content");
             }

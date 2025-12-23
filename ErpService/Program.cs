@@ -2,18 +2,29 @@ using ErpService.Abstractions;
 using ErpService.Configuration;
 using ErpService.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Swashbuckle.AspNetCore.Swagger;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.AspNetCore.SwaggerUI;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using ErpService.FluentValidation;
+using ErpService.Services;
+using ErpService.Repositories;
+using ErpService.Repositories.Impl;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
-// 1. CONFIGURATION
-
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<InvoiceRequestValidator>();
 
 // Add API Key settings from configuration
 builder.Services.Configure<ApiKeySettings>(
@@ -24,54 +35,39 @@ builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));
 
 
-// 2. DATABASE
-
-
-// Configure SQL Server database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 // Add services to the container.
+builder.Services.AddScoped<IInvoiceRepository, EFInvoiceRepository>();
+builder.Services.AddScoped<InvoiceService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Add Swagger/OpenAPI support
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Enable Swagger for all environments (for testing)
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
-// Security
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
 app.MapControllers();
-
-
-// 9. DATABASE MIGRATION
-
-// Automatically apply migrations on startup (optional, for development)
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
-    {
-        dbContext.Database.Migrate();
-        app.Logger.LogInformation("Database migrations applied successfully");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Error applying database migrations");
-    }
-}
-
-// 10. RUN APPLICATION
-
 
 app.Run();
