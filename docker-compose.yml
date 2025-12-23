@@ -6,7 +6,7 @@ services:
     container_name: erp-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "YourStrong@Password123"
+      SA_PASSWORD: ${SA_PASSWORD}
       MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS"
     ports:
       - "1433:1433"
@@ -15,7 +15,7 @@ services:
     networks:
       - erp-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Password123 -Q 'SELECT 1' -C -b -t 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -Q 'SELECT 1' -C -b -t 1"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -29,7 +29,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       ASPNETCORE_URLS: "http://+:80"
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true"
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}
       ApiKeySettings__ValidApiKeys__0: "ERP-2024-RIYADH-PRODUCTION-KEY-001"
       ApiKeySettings__ValidApiKeys__1: "ERP-2024-RIYADH-PRODUCTION-KEY-002"
     ports:
