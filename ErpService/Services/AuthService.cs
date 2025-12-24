@@ -20,7 +20,7 @@ namespace ErpService.Services
             _logger = logger;
         }
 
-        public async Task<LoginResponse?> AuthenticateAsync(LoginRequest request)
+        public LoginResponse? Authenticate(LoginRequest request)
         {
             if (request == null)
             {
@@ -28,7 +28,7 @@ namespace ErpService.Services
                 return null;
             }
 
-            if (!await ValidateTicketAsync(request.Username, request.Password))
+            if (!ValidateTicket(request.Username, request.Password))
             {
                 _logger.LogWarning("Authentication failed for user: {Username}", request.Username);
                 return null;
@@ -49,7 +49,7 @@ namespace ErpService.Services
             };
         }
 
-        private async Task<bool> ValidateTicketAsync(string username, string password)
+        private bool ValidateTicket(string username, string password)
         {
             // Validate from configuration
             var validUsers = _configuration.GetSection("AuthUsers").Get<Dictionary<string, string>>();
@@ -59,11 +59,7 @@ namespace ErpService.Services
                 return false;
             }
 
-            var isValid = validUsers[username] == password;
-
-            await Task.CompletedTask;
-
-            return isValid;
+            return validUsers[username] == password;
         }
     }
 }
