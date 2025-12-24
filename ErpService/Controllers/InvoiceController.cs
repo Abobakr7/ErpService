@@ -19,8 +19,8 @@ namespace ErpService.Controllers
         }
 
         [HttpPost]
-        [Consumes("application/json")]
-        public async Task<ActionResult<InvoiceResponse>> StoreInvoice([FromBody] InvoiceRequest request)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<InvoiceResponse>> StoreInvoice([FromForm] InvoiceRequest request)
         {
             try
             {
