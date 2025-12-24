@@ -1,17 +1,19 @@
+using ErpService.Abstractions;
 using ErpService.Dtos;
 using ErpService.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ErpService.Controllers
 {
     [ApiController]
     [Route("/api/invoices")]
-     //[Authorize] // Disabled for testing
+    [Authorize] // Disabled for testing
     public class InvoiceController : ControllerBase
     {
-        private readonly InvoiceService invoiceService;
+        private readonly IInvoiceService invoiceService;
 
-        public InvoiceController(InvoiceService invoiceService)
+        public InvoiceController(IInvoiceService invoiceService)
         {
             this.invoiceService = invoiceService;
         }
@@ -53,6 +55,7 @@ namespace ErpService.Controllers
         }
 
         [HttpGet("Check")]
+        [AllowAnonymous]
         public string Check()
         {
             return "Invoice Service is up.";

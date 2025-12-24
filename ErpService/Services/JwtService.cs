@@ -20,13 +20,13 @@ namespace ErpService.Services
             _jwtSettings = jwtSettings.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            if (string.IsNullOrWhiteSpace(_jwtSettings.secretKey))
+            if (string.IsNullOrWhiteSpace(_jwtSettings.SecretKey))
                 throw new InvalidOperationException("JWT Secret Key is not configured");
 
-            if (_jwtSettings.secretKey.Length < 32)
+            if (_jwtSettings.SecretKey.Length < 32)
                 throw new InvalidOperationException("JWT Secret Key must be at least 32 characters long");
 
-            _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.secretKey));
+            _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
             _tokenValidationParameters = new TokenValidationParameters
             {
@@ -85,7 +85,7 @@ namespace ErpService.Services
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.secretKey));
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
                 var validationParameters = new TokenValidationParameters
                 {

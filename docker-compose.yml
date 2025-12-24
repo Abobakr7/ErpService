@@ -6,8 +6,9 @@ services:
     container_name: erp-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${SA_PASSWORD}
-      MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS"
+      MSSQL_SA_PASSWORD: "YourStrong@Password123"
+      SA_PASSWORD: YourStrong@Password123
+      MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
     volumes:
@@ -27,11 +28,24 @@ services:
       dockerfile: Dockerfile
     container_name: erp-service-app
     environment:
-      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://+:80"
-      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true;Encrypt=True
+      # API Key Settings
+      ApiKeySettings__HeaderName: "X-API-Key"
       ApiKeySettings__ValidApiKeys__0: "ERP-2024-RIYADH-PRODUCTION-KEY-001"
       ApiKeySettings__ValidApiKeys__1: "ERP-2024-RIYADH-PRODUCTION-KEY-002"
+      
+      # jwt Settings
+      JwtSettings__SecretKey: "YourSuperSecretKeyForJWT_MustBeAtLeast32CharactersLong!"
+      JwtSettings__Issuer: "ErpService"
+      JwtSettings__Audience: "ErpServiceClients"
+      JwtSettings__ExpirationMinutes: "60"
+      
+      # Authentication Users
+      AuthUsers__admin: "Admin@123"
+      AuthUsers__erpuser: "Erp@456"
+      AuthUsers__riyadh_user: "Riyadh@789"
     ports:
       - "8080:80"
     depends_on:

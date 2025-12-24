@@ -1,4 +1,4 @@
-# ===========================================
+﻿# ===========================================
 # Stage 1: Build Stage
 # ===========================================
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
@@ -40,12 +40,13 @@ USER appuser
 # Copy published files from publish stage
 COPY --from=publish /app/publish .
 
-# Expose port 80
-EXPOSE 80
+# Expose port (ASP.NET Core uses 8080 by default in .NET 8+)
+EXPOSE 8080
+EXPOSE 8081
 
-# Health check endpoint
+# Health check endpoint - Fixed path ✅
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost/api/invoice/health || exit 1
+  CMD curl -f http://localhost:8080/api/invoices/Check || exit 1
 
 # Set entry point
 ENTRYPOINT ["dotnet", "ErpService.dll"]
