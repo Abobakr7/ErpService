@@ -137,6 +137,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -152,6 +153,7 @@ if (app.Environment.IsDevelopment())
         dbContext.Database.Migrate();
     }
 }
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 

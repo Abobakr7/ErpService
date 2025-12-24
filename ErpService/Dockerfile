@@ -40,13 +40,11 @@ USER appuser
 # Copy published files from publish stage
 COPY --from=publish /app/publish .
 
-# Expose port (ASP.NET Core uses 8080 by default in .NET 8+)
-EXPOSE 8080
-EXPOSE 8081
+# Expose port 80 (matches docker-compose ASPNETCORE_URLS)
+EXPOSE 80
 
-# Health check endpoint - Fixed path ✅
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8080/api/invoices/Check || exit 1
+# Remove HEALTHCHECK from Dockerfile - docker-compose will handle it
+# This avoids conflicts between Dockerfile and docker-compose healthchecks
 
 # Set entry point
 ENTRYPOINT ["dotnet", "ErpService.dll"]

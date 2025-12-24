@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -21,7 +20,7 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
-
+      
   erpservice:
     build:
       context: ./ErpService
@@ -30,7 +29,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://+:80"
-      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true;Encrypt=True
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true;
       # API Key Settings
       ApiKeySettings__HeaderName: "X-API-Key"
       ApiKeySettings__ValidApiKeys__0: "ERP-2024-RIYADH-PRODUCTION-KEY-001"
@@ -54,11 +53,17 @@ services:
     networks:
       - erp-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
 
 volumes:
   sqlserver-data:
     driver: local
-
+    
 networks:
   erp-network:
     driver: bridge
