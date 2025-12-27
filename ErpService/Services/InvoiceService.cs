@@ -2,7 +2,6 @@ using ErpService.Data.Entities;
 using ErpService.Dtos;
 using ErpService.Repositories;
 using ErpService.Abstractions;
-using System.Text;
 
 namespace ErpService.Services
 {
@@ -23,7 +22,14 @@ namespace ErpService.Services
             {
                 // buisness validation 
                 ValidateBuisness(request);
-                ValidateHtmlFile(request.InvoiceDoc);
+                
+                string htmlContent;
+                using (var reader = new StreamReader(request.InvoiceDoc.OpenReadStream()))
+                {
+                    htmlContent = await reader.ReadToEndAsync();
+                }
+                
+                ValidateHtmlFile(htmlContent);
 
                 var invoice = new Invoice
                 {
@@ -37,7 +43,7 @@ namespace ErpService.Services
                     AmountWithoutTax = request.AmountWithoutTax,
                     TaxAmount = request.TaxAmount,
                     Amount = request.Amount,
-                    InvoiceHtmlContent = request.InvoiceDoc,
+                    InvoiceHtmlContent = htmlContent,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -107,18 +113,6 @@ namespace ErpService.Services
 
         private void ValidateHtmlFile(string content)
         {
-            var byteSize = Encoding.UTF8.GetByteCount(content);
-            if (byteSize > 5 * 1024 * 1024)
-            {
-                throw new InvalidOperationException("Invoice HTML file exceeds maximum size of 5MB");
-            }
-
-            // empty files handle
-            if (content.Length < 100)
-            {
-                throw new InvalidOperationException("Invoice HTML file is too small or empty");
-            }
-
             if (!content.Contains("<html", StringComparison.OrdinalIgnoreCase) &&
                 !content.Contains("<!DOCTYPE", StringComparison.OrdinalIgnoreCase))
             {

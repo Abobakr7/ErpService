@@ -24,11 +24,11 @@ namespace ErpService.Controllers
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public IActionResult Login([FromBody] LoginRequest request)
         {
             _logger.LogInformation("Login attempt for user: {Username}", request.Username);
 
-            var response = await _authService.AuthenticateAsync(request);
+            var response = _authService.Authenticate(request);
 
             if (response == null)
             {

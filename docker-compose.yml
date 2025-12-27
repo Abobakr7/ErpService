@@ -5,8 +5,8 @@ services:
     container_name: erp-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "YourStrong@Password123"
-      SA_PASSWORD: YourStrong@Password123
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD}
+      SA_PASSWORD: ${SA_PASSWORD}
       MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
@@ -29,22 +29,18 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://+:80"
-      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true;
-      # API Key Settings
-      ApiKeySettings__HeaderName: "X-API-Key"
-      ApiKeySettings__ValidApiKeys__0: "ERP-2024-RIYADH-PRODUCTION-KEY-001"
-      ApiKeySettings__ValidApiKeys__1: "ERP-2024-RIYADH-PRODUCTION-KEY-002"
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}
       
       # jwt Settings
-      JwtSettings__SecretKey: "YourSuperSecretKeyForJWT_MustBeAtLeast32CharactersLong!"
-      JwtSettings__Issuer: "ErpService"
-      JwtSettings__Audience: "ErpServiceClients"
-      JwtSettings__ExpirationMinutes: "60"
+      JwtSettings__SecretKey: ${SECRET_KEY}
+      JwtSettings__Issuer: ${ISSUER}
+      JwtSettings__Audience: ${AUDIENCE}
+      JwtSettings__ExpirationMinutes: ${EXPIRATION_MINUTES}
       
       # Authentication Users
-      AuthUsers__admin: "Admin@123"
-      AuthUsers__erpuser: "Erp@456"
-      AuthUsers__riyadh_user: "Riyadh@789"
+      AuthUsers__admin: ${ADMIN}
+      AuthUsers__password: ${PASSWORD}
+      AuthUsers__riyadh_user: ${RIYADH_USER}
     ports:
       - "8080:80"
     depends_on:
