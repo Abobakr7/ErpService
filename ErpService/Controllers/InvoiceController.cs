@@ -54,6 +54,22 @@ namespace ErpService.Controllers
             }
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<InvoiceResponse>>> GetAllInvoices()
+        {
+            var res = await invoiceService.GetInvoices();
+            return Ok(res);
+        }
+
+        [HttpGet("dashboard")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetInvoicesDashboard()
+        {
+            var html = await invoiceService.GenerateInvoicesDashboardHtml();
+            return Content(html, "text/html");
+        }
+
         [HttpGet("Check")]
         [AllowAnonymous]
         public string Check()

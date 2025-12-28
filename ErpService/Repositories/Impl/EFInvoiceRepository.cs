@@ -1,5 +1,6 @@
 ﻿using ErpService.Data;
 using ErpService.Data.Entities;
+using ErpService.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace ErpService.Repositories.Impl
@@ -25,6 +26,11 @@ namespace ErpService.Repositories.Impl
             await context.SaveChangesAsync();
             
             return true;
+        }
+
+        public IQueryable<Invoice> GetAll()
+        {
+            return context.Invoices.AsQueryable();
         }
     }
 }

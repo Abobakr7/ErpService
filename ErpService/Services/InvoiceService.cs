@@ -2,6 +2,8 @@ using ErpService.Data.Entities;
 using ErpService.Dtos;
 using ErpService.Repositories;
 using ErpService.Abstractions;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace ErpService.Services
 {
@@ -74,6 +76,67 @@ namespace ErpService.Services
             }
         }
 
+        public async Task<List<InvoiceResponse>> GetInvoices()
+        {
+            return await _invoiceRepository
+                            .GetAll()
+                            .Select(i => new InvoiceResponse
+                            {
+                                InvoiceId = i.InvoiceId,
+                                TicketId = i.TicketId,
+                                TicketSerial = i.TicketSerial,
+                                TaxAmount = i.TaxAmount,
+                                AmountAfterTax = i.Amount,
+                                Amount = i.AmountWithoutTax,
+                                CreatedAtUtc = i.CreatedAt
+                            })
+                            .ToListAsync() ?? [];
+        }
+
+        public async Task<string> GenerateInvoicesDashboardHtml()
+        {
+            var invoices = await _invoiceRepository
+                            .GetAll()
+                            .ToListAsync() ?? [];
+
+            var totalAmount = invoices.Sum(i => i.Amount);
+            var totalTaxAmount = invoices.Sum(i => i.TaxAmount);
+            var totalHours = invoices.Sum(i => i.NumberOfHours);
+            var totalInvoices = invoices.Count;
+
+            var html = new StringBuilder();
+            html.Append("<html><head><title>Invoices Dashboard</title><style>");
+            html.Append("body { font-family: Arial, sans-serif; margin: 20px; }");
+            html.Append("h1 { color: #333; }");
+            html.Append("table { width: 100%; border-collapse: collapse; margin-top: 20px; }");
+            html.Append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+            html.Append("th { background-color: #4CAF50; color: white; }");
+            html.Append("tr:nth-child(even) { background-color: #f9f9f9; }");
+            html.Append(".stats { margin-top: 20px; font-size: 1.1em; }");
+            html.Append(".stats span { display: block; margin-bottom: 5px; }");
+            html.Append("</style></head><body>");
+
+            html.Append("<h1>Invoices Dashboard</h1>");
+
+            html.Append("<div class='stats'>");
+            html.AppendFormat("<span><strong>Total Invoices:</strong> {0}</span>", totalInvoices);
+            html.AppendFormat("<span><strong>Total Amount:</strong> {0}</span>", totalAmount);
+            html.AppendFormat("<span><strong>Total Tax Amount:</strong> {0}</span>", totalTaxAmount);
+            html.AppendFormat("<span><strong>Total Hours:</strong> {0:F2}</span>", totalHours);
+            html.Append("</div>");
+
+            html.Append("<table><thead><tr><th>Invoice ID</th><th>Ticket Serial</th><th>Amount</th><th>Tax Amount</th><th>Total Amount</th><th>Created At</th></tr></thead><tbody>");
+
+            foreach (var invoice in invoices)
+            {
+                html.AppendFormat("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5:yyyy-MM-dd HH:mm:ss}</td></tr>",
+                    invoice.InvoiceId, invoice.TicketSerial, invoice.AmountWithoutTax, invoice.TaxAmount, invoice.Amount, invoice.CreatedAt);
+            }
+
+            html.Append("</tbody></table></body></html>");
+
+            return html.ToString();
+        }
 
         private void ValidateBuisness(InvoiceRequest request)
         {
