@@ -30,9 +30,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<InvoiceRequestValidator>();
 
-// Add API 
-builder.Services.Configure<ApiKeySettings>(
-    builder.Configuration.GetSection(ApiKeySettings.SectionName));
+
 
 // Add JWT 
 builder.Services.Configure<JwtSettings>(

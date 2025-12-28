@@ -1,12 +1,12 @@
-version: '3.8'
+# version: '3.8'
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: erp-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "YourStrong@Password123"
-      SA_PASSWORD: YourStrong@Password123
+      # MSSQL_SA_PASSWORD: "YourStrong@Password123"
+      SA_PASSWORD: ${DB_PASSWORD}
       MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
@@ -15,7 +15,7 @@ services:
     networks:
       - erp-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -Q 'SELECT 1' -C -b -t 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${DB_PASSWORD} -Q 'SELECT 1' -C -b -t 1"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -29,22 +29,18 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://+:80"
-      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true;
-      # API Key Settings
-      ApiKeySettings__HeaderName: "X-API-Key"
-      ApiKeySettings__ValidApiKeys__0: "ERP-2024-RIYADH-PRODUCTION-KEY-001"
-      ApiKeySettings__ValidApiKeys__1: "ERP-2024-RIYADH-PRODUCTION-KEY-002"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ErpServiceDb;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true;Encrypt=True;"
       
-      # jwt Settings
-      JwtSettings__SecretKey: "YourSuperSecretKeyForJWT_MustBeAtLeast32CharactersLong!"
+     # JWT Settings
+      JwtSettings__SecretKey: ${JWT_SECRET_KEY}
       JwtSettings__Issuer: "ErpService"
       JwtSettings__Audience: "ErpServiceClients"
-      JwtSettings__ExpirationMinutes: "60"
+      JwtSettings__ExpirationMinutes: "10"
       
-      # Authentication Users
-      AuthUsers__admin: "Admin@123"
-      AuthUsers__erpuser: "Erp@456"
-      AuthUsers__riyadh_user: "Riyadh@789"
+      # User Authentication 
+      AuthUsers__admin: ${ADMIN_PASSWORD}
+      AuthUsers__erpuser: ${ERPUSER_PASSWORD}
+      AuthUsers__riyadh_user: ${RIYADH_USER_PASSWORD}
     ports:
       - "8080:80"
     depends_on:
