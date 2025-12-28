@@ -12,6 +12,6 @@
         public decimal AmountWithoutTax { get; init; }
         public decimal TaxAmount { get; init; }
         public decimal Amount { get; init; }
-        public required string InvoiceDoc { get; init; }
+        public required IFormFile InvoiceDoc { get; init; }
     }
 }

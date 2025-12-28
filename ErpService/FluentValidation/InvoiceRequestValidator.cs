@@ -16,9 +16,10 @@ public class InvoiceRequestValidator : AbstractValidator<InvoiceRequest>
             .WithMessage("Ticket Id is required");
         
         RuleFor(i => i.TicketSerial)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
             .WithMessage("Ticket serial number is required")
-            .Length(9)
+            .Matches(@"^\d{9}$")
             .WithMessage("Ticket serial number should be 9 digits");
         
         RuleFor(i => i.From)
@@ -50,7 +51,16 @@ public class InvoiceRequestValidator : AbstractValidator<InvoiceRequest>
             .WithMessage("Amount cannot be negative");
         
         RuleFor(i => i.InvoiceDoc)
-            .NotEmpty()
-            .WithMessage("Invoice HTML document must be provided");
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .WithMessage("Invoice HTML document must be provided")
+            .Must(file => file.Length > 0)
+            .WithMessage("Invoice HTML document cannot be empty")
+            .Must(file => file.Length <= 5 * 1024 * 1024)
+            .WithMessage("Invoice HTML file exceeds maximum size of 5MB")
+            .Must(file => file.ContentType == "text/html" ||
+                        file.FileName.EndsWith(".html", StringComparison.OrdinalIgnoreCase) ||
+                        file.FileName.EndsWith(".htm", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Invoice document must be an HTML file");
     }
 }
