@@ -93,11 +93,11 @@ namespace ErpService.Services
                 );
             }
 
-            // total = amount + tax
-            if (request.Amount != request.AmountWithoutTax + request.TaxAmount)
+            // total = amount - tax
+            if (request.Amount != request.AmountWithoutTax - request.TaxAmount)
             {
                 throw new InvalidOperationException(
-                    "Amount must equal AmountWithoutTax + TaxAmount"
+                    "Amount must equal AmountWithoutTax - TaxAmount"
                 );
             }
 

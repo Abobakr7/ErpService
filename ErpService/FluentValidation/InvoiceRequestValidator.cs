@@ -35,7 +35,7 @@ public class InvoiceRequestValidator : AbstractValidator<InvoiceRequest>
             .WithMessage("Number of hours must be between 1 and 23");
         
         RuleFor(i => i.LicensePlate)
-            .Matches(@"^[A-Z]{3}\d{1,4}$")
+            .Matches(@"^\d{1,4}[A-Z]{3}$")
             .WithMessage("Wrong Saudi license plate format");
         
         RuleFor(i => i.TaxAmount)
