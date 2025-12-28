@@ -10,7 +10,7 @@
 
         public string Audience { get; set; } = "ErpServiceClients";
 
-        public int ExpirationMinutes { get; set; } = 60;
+        public int ExpirationMinutes { get; set; } = 10;
 
     }
 }
